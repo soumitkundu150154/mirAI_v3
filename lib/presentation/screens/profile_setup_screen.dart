@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/user_provider.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
-import 'home_screen.dart';
+import 'app_shell.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({Key? key}) : super(key: key);
@@ -21,7 +21,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   void _saveProfile() {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your name 😄')),
+        SnackBar(
+          content: const Text('Please enter your name 😄'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
       return;
     }
@@ -33,7 +37,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     );
 
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const AppShell()),
     );
   }
 
@@ -47,27 +51,46 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text('Profile Setup', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              const SizedBox(height: 40),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primaryColor, primaryColor.withOpacity(0.6)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withOpacity(0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.auto_awesome, size: 36, color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
                 child: Text(
                   'Welcome to mirAI! 🎉',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
+                    color: primaryColor,
                   ),
                 ),
               ),
@@ -75,28 +98,28 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               Center(
                 child: Text(
                   'Tell us a little about yourself.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
               const SizedBox(height: 40),
 
-              const Text(
+              Text(
                 'Your Name *',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               CustomTextField(
                 controller: _nameController,
                 hintText: 'E.g., John Doe',
-                prefixIcon: Icons.person_outline,
+                prefixIcon: Icons.person_outline_rounded,
               ),
 
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Instagram Profile Link',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               CustomTextField(
                 controller: _instaController,
                 hintText: 'https://instagram.com/yourhandle',
@@ -104,11 +127,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               ),
 
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'YouTube Channel Link',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               CustomTextField(
                 controller: _youtubeController,
                 hintText: 'https://youtube.com/@yourchannel',
@@ -119,7 +142,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
-                  text: 'Continue',
+                  text: 'Get Started',
                   icon: Icons.arrow_forward_rounded,
                   onPressed: _saveProfile,
                 ),

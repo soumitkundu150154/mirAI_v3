@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/shared_prefs_provider.dart';
-import 'home_screen.dart';
+import 'app_shell.dart';
 import 'profile_setup_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -26,7 +26,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     _controller.forward();
 
-    // The Riverpod provider is read in a microtask or post-frame callback
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _navigateToNextScreen();
     });
@@ -40,7 +39,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => isSetupComplete ? const HomeScreen() : const ProfileSetupScreen(),
+            builder: (_) => isSetupComplete ? const AppShell() : const ProfileSetupScreen(),
           ),
         );
       }
@@ -55,47 +54,63 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: FadeTransition(
           opacity: _animation,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/logo.png',
-                width: 120,
-                height: 120,
-                errorBuilder: (context, error, stackTrace) => const Icon(
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, primaryColor.withOpacity(0.6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
                   Icons.auto_awesome,
-                  size: 100,
-                  color: Colors.deepPurple,
+                  size: 48,
+                  color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              const SizedBox(height: 28),
+              Text(
                 'mirAI',
                 style: TextStyle(
-                  fontSize: 40,
+                  fontSize: 42,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+                  color: primaryColor,
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              const SizedBox(height: 12),
+              Text(
                 'Your AI Social Media Assistant',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  letterSpacing: 1,
+                  fontSize: 15,
+                  color: isDark ? const Color(0xFF7A7A98) : Colors.grey.shade500,
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 48),
-              const SpinKitPulse(
-                color: Colors.deepPurple,
-                size: 50.0,
+              SpinKitPulse(
+                color: primaryColor,
+                size: 44.0,
               ),
             ],
           ),

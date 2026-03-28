@@ -16,7 +16,11 @@ class GeneratorScreen extends ConsumerStatefulWidget {
 
 class _GeneratorScreenState extends ConsumerState<GeneratorScreen> {
   late TextEditingController _topicController;
-  final List<String> _platforms = ['Instagram', 'LinkedIn', 'Twitter'];
+  final List<Map<String, dynamic>> _platforms = [
+    {'name': 'Instagram', 'icon': Icons.camera_alt_rounded, 'color': Colors.pink},
+    {'name': 'LinkedIn', 'icon': Icons.work_rounded, 'color': const Color(0xFF0077B5)},
+    {'name': 'Twitter', 'icon': Icons.alternate_email_rounded, 'color': const Color(0xFF1DA1F2)},
+  ];
   String _selectedPlatform = 'Instagram';
 
   @override
@@ -34,12 +38,16 @@ class _GeneratorScreenState extends ConsumerState<GeneratorScreen> {
   void _generateContent({String? additionalInstruction}) {
     if (_topicController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a topic')),
+        SnackBar(
+          content: const Text('Please enter a topic'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
       return;
     }
     
-    // Hide keyboard
     FocusScope.of(context).unfocus();
 
     ref.read(contentNotifierProvider.notifier).generatePost(
@@ -52,182 +60,220 @@ class _GeneratorScreenState extends ConsumerState<GeneratorScreen> {
   @override
   Widget build(BuildContext context) {
     final contentState = ref.watch(contentNotifierProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text('Create Post', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Topic or Idea',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              // ─── Header ───
+              Text('Create Post ✨', style: Theme.of(context).textTheme.headlineLarge),
+              const SizedBox(height: 4),
+              Text(
+                'Generate AI-powered content for your socials',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(height: 8),
+
+              const SizedBox(height: 28),
+
+              // ─── Topic ───
+              Text('Topic or Idea', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 10),
               CustomTextField(
                 controller: _topicController,
                 hintText: 'E.g., Benefits of learning Flutter',
-                prefixIcon: Icons.lightbulb_outline,
+                prefixIcon: Icons.lightbulb_outline_rounded,
               ),
               
               const SizedBox(height: 24),
-              const Text(
-                'Platform',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+
+              // ─── Platform Selector ───
+              Text('Platform', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 10),
+              Row(
+                children: _platforms.map((p) {
+                  final isSelected = _selectedPlatform == p['name'];
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedPlatform = p['name']),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: EdgeInsets.only(
+                          right: p != _platforms.last ? 10 : 0,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? primaryColor.withOpacity(isDark ? 0.15 : 0.08)
+                              : cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? primaryColor.withOpacity(0.5)
+                                : isDark
+                                    ? Colors.white.withOpacity(0.06)
+                                    : Colors.grey.shade200,
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              p['icon'] as IconData,
+                              color: isSelected ? primaryColor : (p['color'] as Color),
+                              size: 22,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              p['name'] as String,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? primaryColor : textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedPlatform,
-                    isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.deepPurple),
-                    items: _platforms.map((platform) {
-                      return DropdownMenuItem(
-                        value: platform,
-                        child: Text(platform, style: const TextStyle(fontWeight: FontWeight.w500)),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedPlatform = value;
-                        });
-                      }
-                    },
-                  ),
-                ),
+                  );
+                }).toList(),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
+
+              // ─── Generate Button ───
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
                   text: 'Generate Content',
-                  icon: Icons.auto_awesome,
+                  icon: Icons.auto_awesome_rounded,
                   isLoading: contentState.isGenerating,
                   onPressed: _generateContent,
                 ),
               ),
 
+              // ─── Error ───
               if (contentState.error != null) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.red.shade200),
+                    color: Colors.red.withOpacity(isDark ? 0.1 : 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.red.withOpacity(0.2)),
                   ),
-                  child: Text(
-                    contentState.error!,
-                    style: TextStyle(color: Colors.red.shade800),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          contentState.error!,
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
 
+              // ─── Result ───
               if (contentState.generatedText != null && !contentState.isGenerating) ...[
-                const SizedBox(height: 32),
-                const Divider(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
+                Divider(color: Theme.of(context).dividerColor),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Generated Result',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                    Text('Generated Result', style: Theme.of(context).textTheme.titleLarge),
                     if (contentState.sentiment != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: _getSentimentColor(contentState.sentiment!).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: _getSentimentColor(contentState.sentiment!).withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _getSentimentColor(contentState.sentiment!).withOpacity(0.3),
+                          ),
                         ),
                         child: Text(
                           contentState.sentiment!,
                           style: TextStyle(
                             color: _getSentimentColor(contentState.sentiment!),
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: isDark
+                        ? Border.all(color: Colors.white.withOpacity(0.06))
+                        : Border.all(color: Colors.grey.shade200),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: SelectableText(
                     contentState.generatedText!,
-                    style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87),
+                    style: TextStyle(fontSize: 14, height: 1.6, color: textColor),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: contentState.generatedText!));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Copied to clipboard!')),
+                        SnackBar(
+                          content: const Text('Copied to clipboard!'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       );
                     },
-                    icon: const Icon(Icons.copy, size: 18),
-                    label: const Text('Copy to Clipboard'),
-                    style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
+                    icon: Icon(Icons.copy_rounded, size: 16, color: primaryColor),
+                    label: Text(
+                      'Copy',
+                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Make it better?',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                Text('Refine it', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 12),
                 Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
-                    _buildRegenerateButton('Funnier 😆'),
-                    _buildRegenerateButton('More professional 👔'),
-                    _buildRegenerateButton('More emotional ❤️'),
+                    _buildRefineChip('Funnier 😆', primaryColor, isDark),
+                    _buildRefineChip('Professional 👔', primaryColor, isDark),
+                    _buildRefineChip('Emotional ❤️', primaryColor, isDark),
+                    _buildRefineChip('Shorter ✂️', primaryColor, isDark),
                   ],
                 ),
-                const SizedBox(height: 48),
               ],
             ],
           ),
@@ -236,21 +282,23 @@ class _GeneratorScreenState extends ConsumerState<GeneratorScreen> {
     );
   }
 
-  Widget _buildRegenerateButton(String label) {
+  Widget _buildRefineChip(String label, Color primaryColor, bool isDark) {
     return InkWell(
-      onTap: () => _generateContent(additionalInstruction: "more ${label.split(' ')[0].toLowerCase()}"),
-      borderRadius: BorderRadius.circular(20),
+      onTap: () => _generateContent(
+        additionalInstruction: 'more ${label.split(' ')[0].toLowerCase()}',
+      ),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.deepPurple.shade50,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.deepPurple.shade200),
+          color: primaryColor.withOpacity(isDark ? 0.12 : 0.06),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: primaryColor.withOpacity(0.2)),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.deepPurple.shade700,
+            color: primaryColor,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -260,8 +308,8 @@ class _GeneratorScreenState extends ConsumerState<GeneratorScreen> {
   }
 
   Color _getSentimentColor(String sentiment) {
-    if (sentiment.contains('Positive')) return Colors.green;
-    if (sentiment.contains('Negative')) return Colors.red;
-    return Colors.amber.shade700;
+    if (sentiment.contains('Positive')) return const Color(0xFF4CD97B);
+    if (sentiment.contains('Negative')) return const Color(0xFFFF6B8A);
+    return const Color(0xFFFFB84D);
   }
 }

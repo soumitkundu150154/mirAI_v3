@@ -9,14 +9,18 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analytics = ref.watch(analyticsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? Colors.black : Colors.grey.shade50;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final cardColor = isDark ? Colors.grey.shade900 : Colors.white;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Analytics', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: Text('Analytics', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: textColor),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -33,45 +37,46 @@ class AnalyticsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Overview',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildStatCard('Likes', analytics.likes.toString(), Icons.favorite, Colors.pink)),
+                  Expanded(child: _buildStatCard('Likes', analytics.likes.toString(), Icons.favorite, Colors.pink, cardColor, textColor, isDark)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildStatCard('Comments', analytics.comments.toString(), Icons.comment, Colors.blue)),
+                  Expanded(child: _buildStatCard('Comments', analytics.comments.toString(), Icons.comment, Colors.blue, cardColor, textColor, isDark)),
                 ],
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildStatCard('Shares', analytics.shares.toString(), Icons.share, Colors.green)),
+                  Expanded(child: _buildStatCard('Shares', analytics.shares.toString(), Icons.share, Colors.green, cardColor, textColor, isDark)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildStatCard('Growth', '+14%', Icons.trending_up, Colors.orange)),
+                  Expanded(child: _buildStatCard('Growth', '+14%', Icons.trending_up, Colors.orange, cardColor, textColor, isDark)),
                 ],
               ),
               
               const SizedBox(height: 48),
-              const Text(
+              Text(
                 'Weekly Engagement',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 24),
               Container(
                 height: 300,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
+                    if (!isDark)
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                   ],
                 ),
                 child: BarChart(
@@ -120,7 +125,7 @@ class AnalyticsScreen extends ConsumerWidget {
                       horizontalInterval: 4,
                       getDrawingHorizontalLine: (value) {
                         return FlLine(
-                          color: Colors.grey.shade200,
+                          color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
                           strokeWidth: 1,
                         );
                       },
@@ -149,18 +154,19 @@ class AnalyticsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, Color cardColor, Color textColor, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
         ],
       ),
       child: Column(
@@ -177,10 +183,10 @@ class AnalyticsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 4),
@@ -188,7 +194,7 @@ class AnalyticsScreen extends ConsumerWidget {
             title,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade500,
             ),
           ),
         ],

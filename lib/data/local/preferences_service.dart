@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferencesService {
@@ -9,6 +10,7 @@ class PreferencesService {
   static const String _keyUserName = 'user_name';
   static const String _keyInstaLink = 'insta_link';
   static const String _keyYoutubeLink = 'youtube_link';
+  static const String _keyCustomSocials = 'custom_socials';
   static const String _keyIsDarkMode = 'is_dark_mode';
 
   bool isSetupComplete() {
@@ -23,18 +25,32 @@ class PreferencesService {
     required String name,
     required String instaLink,
     required String youtubeLink,
+    List<Map<String, String>> customSocials = const [],
   }) async {
     await _prefs.setString(_keyUserName, name);
     await _prefs.setString(_keyInstaLink, instaLink);
     await _prefs.setString(_keyYoutubeLink, youtubeLink);
+    await _prefs.setString(_keyCustomSocials, jsonEncode(customSocials));
     await saveSetupComplete(true);
   }
 
-  Map<String, String> getUserProfile() {
+  Map<String, dynamic> getUserProfile() {
+    String? customSocialsStr = _prefs.getString(_keyCustomSocials);
+    List<Map<String, String>> customSocials = [];
+    if (customSocialsStr != null) {
+      try {
+        List<dynamic> parsed = jsonDecode(customSocialsStr);
+        customSocials = parsed.map((e) => Map<String, String>.from(e)).toList();
+      } catch (e) {
+        // Handle old/corrupted data
+      }
+    }
+
     return {
       'name': _prefs.getString(_keyUserName) ?? '',
       'instaLink': _prefs.getString(_keyInstaLink) ?? '',
       'youtubeLink': _prefs.getString(_keyYoutubeLink) ?? '',
+      'customSocials': customSocials,
     };
   }
 
