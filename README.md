@@ -74,6 +74,8 @@ User Input → Creation → Compliance → Localization → Emotion Analysis →
 
 ---
 
+You can download the app from - https://github.com/soumitkundu150154/mirAI_v3/releases/download/v1.0.0/v1.0.0.apk
+
 ## Output Format
 
 ```json
